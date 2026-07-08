@@ -11,35 +11,43 @@ import streamlit as st
 import datetime
 
 # --- Page Configuration ---
-st.set_page_config(page_title="BuildSmart CPMS", layout="wide")
+st.set_page_config(page_title="Construction Progress CPMS", layout="wide")
 
 # --- Initialize Session State (Database & Login Memory) ---
 if 'projects_db' not in st.session_state:
     st.session_state.projects_db = {}
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
+if 'current_user' not in st.session_state:
+    st.session_state.current_user = None
 
 # --- Authentication System ---
 def verify_login():
-    # Checks inputs against Streamlit's secure secrets management
-    if st.session_state.user == st.secrets["admin_username"] and st.session_state.pwd == st.secrets["admin_password"]:
-        st.session_state.logged_in = True
+    username = st.session_state.user.strip()
+    password = st.session_state.pwd.strip()
+    
+    # Check if the 'users' block exists in secrets
+    if "users" in st.secrets:
+        # Check if username exists AND password matches
+        if username in st.secrets["users"] and st.secrets["users"][username] == password:
+            st.session_state.logged_in = True
+            st.session_state.current_user = username
+        else:
+            st.error("Access Denied: Incorrect Username or Password.")
     else:
-        st.error("Access Denied: Incorrect Username or Password.")
+        st.error("System Error: User database not configured in secrets.")
 
 # --- Login Screen ---
 if not st.session_state.logged_in:
-    st.title("🔐 BuildSmart CPMS - Secure Login")
-    st.markdown("Please authenticate to access the Progress Monitoring System.")
+    st.title("🔐 Multi-Tenant CPMS - Secure Login")
+    st.markdown("Please authenticate with your company credentials.")
     
     with st.container():
-        st.text_input("Username", key="user")
-        st.text_input("Password", type="password", key="pwd") # type="password" hides the text
+        st.text_input("Company Username", key="user")
+        st.text_input("Password", type="password", key="pwd")
         st.button("Login", on_click=verify_login)
     
-    # st.stop() prevents the rest of the code from running until logged in
     st.stop()
-
 # ==========================================
 # MAIN APP BEGINS HERE (Only runs if logged in)
 # ==========================================
