@@ -13,6 +13,39 @@ import datetime
 # --- Page Configuration ---
 st.set_page_config(page_title="BuildSmart CPMS", layout="wide")
 
+# --- Initialize Session State (Database & Login Memory) ---
+if 'projects_db' not in st.session_state:
+    st.session_state.projects_db = {}
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+# --- Authentication System ---
+def verify_login():
+    # Checks inputs against Streamlit's secure secrets management
+    if st.session_state.user == st.secrets["admin_username"] and st.session_state.pwd == st.secrets["admin_password"]:
+        st.session_state.logged_in = True
+    else:
+        st.error("Access Denied: Incorrect Username or Password.")
+
+# --- Login Screen ---
+if not st.session_state.logged_in:
+    st.title("🔐 BuildSmart CPMS - Secure Login")
+    st.markdown("Please authenticate to access the Progress Monitoring System.")
+    
+    with st.container():
+        st.text_input("Username", key="user")
+        st.text_input("Password", type="password", key="pwd") # type="password" hides the text
+        st.button("Login", on_click=verify_login)
+    
+    # st.stop() prevents the rest of the code from running until logged in
+    st.stop()
+
+# ==========================================
+# MAIN APP BEGINS HERE (Only runs if logged in)
+# ==========================================
+# --- Page Configuration ---
+st.set_page_config(page_title="BuildSmart CPMS", layout="wide")
+
 # --- Initialize Session State (Database Memory) ---
 # This ensures data isn't lost when interacting with the web page
 if 'projects_db' not in st.session_state:
